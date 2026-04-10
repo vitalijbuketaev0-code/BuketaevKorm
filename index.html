@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BUKETAEV.KORM FINAL ONLINE</title>
+  <meta name="theme-color" content="#064e3b" />
+  <meta name="description" content="BUKETAEV.KORM — финальная онлайн-система для кормления, аналитики и экономики молочной фермы." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --card:rgba(255,255,255,.90); --line:rgba(255,255,255,.6); --text:#0f172a; --muted:#64748b;
+      --green:#064e3b; --green2:#10b981; --amber:#f59e0b; --red:#dc2626; --blue:#0284c7; --violet:#7c3aed;
+      --shadow:0 20px 60px rgba(15,23,42,.08);
+    }
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    body{
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:radial-gradient(circle at top, rgba(16,185,129,.16), transparent 22%),linear-gradient(180deg,#f8fafc 0%,#f5f8f7 50%,#eef7f2 100%);
+    }
+    .hide{display:none!important}
+    .container{max-width:1520px;margin:0 auto;padding:18px}
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login{width:min(1140px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .brand,.hero-main{
+      position:relative;overflow:hidden;color:#fff;border-radius:32px;padding:34px;
+      background:linear-gradient(135deg,#022c22 0%,#064e3b 35%,#065f46 62%,#0f766e 100%);
+      box-shadow:0 30px 90px rgba(6,78,59,.35)
+    }
+    .hero-main{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;margin-bottom:18px}
+    .brand:before,.hero-main:before{content:"";position:absolute;inset:0;background:
+      radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 28%),
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.08), transparent 20%)}
+    .logo{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+    .logo-badge{width:62px;height:62px;border-radius:20px;background:linear-gradient(135deg,#10b981,#065f46,#0f766e);box-shadow:0 18px 45px rgba(6,78,59,.35);overflow:hidden}
+    .logo-badge svg{width:100%;height:100%}
+    .brand-title{font-weight:900;letter-spacing:.18em;font-size:22px;background:linear-gradient(90deg,#d1fae5,#fff,#d1fae5);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .brand-sub{font-size:11px;letter-spacing:.22em;color:rgba(236,253,245,.72);text-transform:uppercase}
+    .chip{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-size:13px;margin:0 8px 8px 0}
+    .brand h1,.hero-main h2{position:relative;z-index:1;font-size:42px;line-height:1.05;margin:16px 0 10px}
+    .brand p,.hero-main p{position:relative;z-index:1;color:rgba(236,253,245,.86);line-height:1.6}
+    .feat,.stats4{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+    .feat .box,.glass{padding:16px;border-radius:24px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px)}
+    .feat .k,.glass .k{font-size:12px;color:rgba(236,253,245,.72)} .feat .v,.glass .v{font-size:24px;font-weight:900;margin-top:8px}
+    .panel{padding:28px}
+    .title{margin:0;font-size:26px;font-weight:900}.desc{color:var(--muted);margin-top:8px;line-height:1.55}
+    .field{margin-bottom:14px}.field label{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:12px 13px;border-radius:14px;border:1px solid #dbe3eb;background:#fff;color:#0f172a}
+    button,.btn{border:none;cursor:pointer;border-radius:18px;padding:12px 16px;font-weight:800;background:#064e3b;color:#fff;box-shadow:0 10px 25px rgba(6,78,59,.18)}
+    .btn.secondary{background:#fff;color:#064e3b;border:1px solid rgba(6,95,70,.12);box-shadow:var(--shadow)}
+    .topbar,.tabsbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-radius:22px;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);box-shadow:0 12px 35px rgba(15,23,42,.06)}
+    .tab{border:none;background:transparent;padding:12px 16px;border-radius:16px;cursor:pointer;font-weight:800;color:#334155}
+    .tab.active{background:#064e3b;color:#fff}
+    .section{display:none}.section.active{display:block}
+    .grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .stat-card{padding:20px;border-radius:28px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.68);box-shadow:var(--shadow)}
+    .stat-card .label{font-size:14px;color:var(--muted);font-weight:700}.stat-card .value{font-size:34px;font-weight:900;margin-top:8px}.stat-card .sub{font-size:12px;color:var(--muted);margin-top:8px}
+    .mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .mini{background:#f8fafc;border-radius:20px;padding:14px}.mini .k{font-size:12px;color:var(--muted)} .mini .v{font-size:24px;font-weight:900;margin-top:6px}
+    .tablewrap{overflow:auto;max-height:560px;border:1px solid #e2e8f0;border-radius:20px;background:#fff}
+    table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:middle}
+    th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#475569;background:#f8fafc;position:sticky;top:0}
+    .fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .tip{padding:14px;border-radius:18px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;margin-bottom:10px}
+    .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+    .normrow{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:12px;align-items:center;background:#f8fafc;padding:12px;border-radius:18px;margin-bottom:8px}
+    .pos{color:#059669;font-weight:800}.neg{color:#dc2626;font-weight:800}
+    .chartbox{padding:18px;border-radius:24px;background:#fff;border:1px solid #e2e8f0;min-height:320px}
+    .econ-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .econ{padding:18px;border-radius:24px;background:#fff;border:1px solid #e2e8f0}.econ .k{font-size:12px;color:var(--muted)} .econ .v{font-size:28px;font-weight:900;margin-top:8px}
+    .director-box{padding:18px;border-radius:24px;background:#fff;border:1px solid #e2e8f0}
+    .director-box .big{font-size:30px;font-weight:900;margin-top:8px}
+    .modal-bg{position:fixed;inset:0;background:rgba(2,6,23,.42);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+    .modal{max-width:1080px;width:100%;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.7);border-radius:30px;box-shadow:0 30px 90px rgba(15,23,42,.18);padding:22px}
+    .show{display:flex}.muted{color:var(--muted)}
+    @media(max-width:1180px){.login,.hero-main,.grid2,.grid3,.grid4,.metrics,.econ-grid{grid-template-columns:1fr}.stats4,.feat{grid-template-columns:1fr 1fr}.hero-main h2,.brand h1{font-size:36px}}
+    @media(max-width:720px){.container{padding:12px}.stats4,.feat,.fields,.mini-grid{grid-template-columns:1fr}.normrow{grid-template-columns:1fr}.hero-main h2,.brand h1{font-size:30px}}
+  </style>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap">
+  <div class="login">
+    <div class="brand card">
+      <div class="logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 100 100">
+            <path d="M20 70 C18 46, 30 26, 51 24 C68 23, 82 36, 83 56 C84 73, 73 84, 54 84 C38 84, 23 80, 20 70 Z" fill="rgba(255,255,255,0.12)"/>
+            <path d="M31 42 C36 31, 48 26, 60 28 C72 30, 79 38, 80 50 C80 60, 75 69, 67 74 C61 78, 53 80, 45 78 C39 77, 34 74, 30 70 C35 66, 38 62, 38 57 C38 50, 35 45, 31 42 Z" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M56 39 C60 42, 63 46, 64 51 C65 56, 63 62, 60 66" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M35 68 C43 62, 50 56, 58 50 C62 47, 68 43, 74 39" fill="none" stroke="#D1FAE5" stroke-width="4.5" stroke-linecap="round"/>
+            <circle cx="66" cy="45" r="2.7" fill="white"/>
+          </svg>
+        </div>
+        <div><div class="brand-title">BUKETAEV.KORM FINAL</div><div class="brand-sub">КХ Прекрасное</div></div>
+      </div>
+      <div style="margin-top:14px"><span class="chip">Премиум agrotech</span><span class="chip">Онлайн-версия под домен</span></div>
+      <h1>Финальная онлайн-система для молочной фермы</h1>
+      <p>Кормление, производство молока, жир и белок, соматика, полная экономика, сотрудники, PDF-анализ кормов и печатные отчеты — всё в одном сайте, готовом к загрузке на домен.</p>
+      <div class="feat">
+        <div class="box"><div class="k">Формат</div><div class="v">Online</div><div>Готов к загрузке на хостинг</div></div>
+        <div class="box"><div class="k">PWA</div><div class="v">App</div><div>Ставится на телефон</div></div>
+        <div class="box"><div class="k">Экономика</div><div class="v">Full</div><div>Корма, ГСМ, свет, вет, ФОТ</div></div>
+        <div class="box"><div class="k">Отчеты</div><div class="v">Boss</div><div>Для директора и бухгалтера</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="panel">
+        <h2 class="title">Вход в систему</h2>
+        <div class="desc">Локальный демо-вход для запуска сайта. После размещения на хостинге всё будет открываться через домен.</div>
+        <div style="height:18px"></div>
+        <div class="field"><label>Логин</label><input id="loginUser" value="admin"></div>
+        <div class="field"><label>Пароль</label><input id="loginPass" type="password" value="1234"></div>
+        <div class="field"><label>Название фермы</label><input id="farmNameInput" value="КХ Прекрасное"></div>
+        <div class="field"><label>Ответственный</label><input id="technologistInput" value="Букетаев Виталий Витальевич"></div>
+        <button id="enterBtn" style="width:100%;margin-top:6px">Войти в BUKETAEV.KORM FINAL</button>
+        <div class="tip ok" style="margin-top:14px">Демо-вход: логин <strong>admin</strong>, пароль <strong>1234</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="appScreen" class="hide">
+  <div class="container">
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-badge">
+          <svg viewBox="0 0 100 100">
+            <path d="M20 70 C18 46, 30 26, 51 24 C68 23, 82 36, 83 56 C84 73, 73 84, 54 84 C38 84, 23 80, 20 70 Z" fill="rgba(255,255,255,0.12)"/>
+            <path d="M31 42 C36 31, 48 26, 60 28 C72 30, 79 38, 80 50 C80 60, 75 69, 67 74 C61 78, 53 80, 45 78 C39 77, 34 74, 30 70 C35 66, 38 62, 38 57 C38 50, 35 45, 31 42 Z" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M56 39 C60 42, 63 46, 64 51 C65 56, 63 62, 60 66" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M35 68 C43 62, 50 56, 58 50 C62 47, 68 43, 74 39" fill="none" stroke="#D1FAE5" stroke-width="4.5" stroke-linecap="round"/>
+            <circle cx="66" cy="45" r="2.7" fill="white"/>
+          </svg>
+        </div>
+        <div><div class="brand-title" style="font-size:18px">BUKETAEV.KORM FINAL</div><div class="brand-sub" id="farmNameTop">КХ Прекрасное</div></div>
+      </div>
+      <button class="btn secondary" id="logoutBtn">Выйти</button>
+    </div>
+
+    <section class="hero-main">
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px"><span class="chip">Онлайн-панель управления фермой</span><span class="chip" id="techChip">Главный технолог: Букетаев Виталий Витальевич</span></div>
+        <h2>Кормление, молоко, затраты и сотрудники в одном онлайн-сайте</h2>
+        <p>Готовая система под размещение на домене: расчёт рационов, библиотека кормов, импорт PDF, производство молока, графики, затраты, зарплата и отчёты для директора.</p>
+      </div>
+      <div class="stats4">
+        <div class="glass"><div class="k">Молоко/сутки</div><div class="v" id="heroMilkDay">0</div><div class="k">По всей ферме</div></div>
+        <div class="glass"><div class="k">Полные затраты/сутки</div><div class="v" id="heroFullCostDay">0</div><div class="k">Корма + прочие расходы</div></div>
+        <div class="glass"><div class="k">Маржа/сутки</div><div class="v" id="heroMarginDay">0</div><div class="k">По всей ферме</div></div>
+        <div class="glass"><div class="k">Сотрудников</div><div class="v" id="heroStaffCount">0</div><div class="k">Активный список</div></div>
+      </div>
+    </section>
+
+    <div class="tabsbar">
+      <div class="tabs">
+        <button class="tab active" data-tab="dashboard">Сводка</button>
+        <button class="tab" data-tab="analytics">Аналитика</button>
+        <button class="tab" data-tab="production">Производство молока</button>
+        <button class="tab" data-tab="economy">Экономика фермы</button>
+        <button class="tab" data-tab="costs">Прочие затраты</button>
+        <button class="tab" data-tab="staff">Сотрудники</button>
+        <button class="tab" data-tab="director">Отчет директору</button>
+        <button class="tab" data-tab="feeds">Корма</button>
+        <button class="tab" data-tab="high">Высокоудой</button>
+        <button class="tab" data-tab="low">Низкоудой</button>
+        <button class="tab" data-tab="dry">Сухостой</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn secondary" id="exportBtn">Экспорт базы</button>
+        <label class="btn secondary">Импорт базы<input type="file" id="importJson" accept="application/json" hidden></label>
+        <button id="printBtn">Печать отчета</button>
+      </div>
+    </div>
+
+    <section id="dashboard" class="section active"></section>
+    <section id="analytics" class="section"></section>
+    <section id="production" class="section"></section>
+    <section id="economy" class="section"></section>
+    <section id="costs" class="section"></section>
+    <section id="staff" class="section"></section>
+    <section id="director" class="section"></section>
+    <section id="feeds" class="section"></section>
+    <section id="high" class="section"></section>
+    <section id="low" class="section"></section>
+    <section id="dry" class="section"></section>
+  </div>
+</div>
+
+<div class="modal-bg" id="pdfModalBg">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px">
+      <div><div class="title">Проверка анализа из PDF</div><div class="desc">Приложение вытащило значения автоматически. Проверь, поправь и сохрани как новый корм.</div></div>
+      <button class="btn secondary" id="closeModal">Закрыть</button>
+    </div>
+    <div class="grid2">
+      <div><div class="fields" id="pdfFields"></div></div>
+      <div><div class="field"><label>Фрагмент текста из PDF</label><textarea id="pdfSourceText" readonly style="min-height:420px"></textarea></div></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button class="btn secondary" id="cancelPdfSave">Отмена</button>
+      <button id="savePdfFeed">Сохранить корм</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs" type="module"></script>
+<script>
+const STORAGE_KEY = "buketaev-korm-final-online-v1";
+const SESSION_KEY = "buketaev-korm-session-final-online";
+const nutrientLabels = {price:"Цена, тг/кг", dm:"СВ, %", nel:"NEL, МДж/кг СВ", cp:"СП, % СВ", ndf:"NDF, % СВ", adf:"ADF, % СВ", starch:"Крахмал, % СВ", sugar:"Сахар, % СВ", fat:"Жир, % СВ", ash:"Зола, % СВ", ca:"Ca, % СВ", p:"P, % СВ"};
+const defaultFeeds = [
+  { name: "Силос кукурузный", price: 22, dm: 35, nel: 6.4, cp: 8.5, ndf: 42, adf: 24, starch: 31, sugar: 4, fat: 3.0, ash: 4.2, ca: 0.25, p: 0.22 },
+  { name: "Сенаж люцерны", price: 30, dm: 45, nel: 5.7, cp: 19, ndf: 40, adf: 31, starch: 3, sugar: 7, fat: 3.2, ash: 10, ca: 1.35, p: 0.28 },
+  { name: "Сено луговое", price: 45, dm: 86, nel: 4.9, cp: 10, ndf: 60, adf: 35, starch: 2, sugar: 8, fat: 2, ash: 8, ca: 0.45, p: 0.24 },
+  { name: "Солома ячменная", price: 20, dm: 88, nel: 3.8, cp: 4.5, ndf: 77, adf: 50, starch: 1, sugar: 2, fat: 1.4, ash: 7, ca: 0.25, p: 0.08 },
+  { name: "Ячмень дробленый", price: 95, dm: 86, nel: 7.8, cp: 12, ndf: 20, adf: 7, starch: 57, sugar: 3, fat: 2.2, ash: 2.8, ca: 0.06, p: 0.38 },
+  { name: "Кукуруза дробленая", price: 110, dm: 86, nel: 8.3, cp: 9, ndf: 12, adf: 4, starch: 70, sugar: 2, fat: 4.2, ash: 1.5, ca: 0.03, p: 0.30 },
+  { name: "Шрот подсолнечный", price: 135, dm: 89, nel: 6.4, cp: 34, ndf: 33, adf: 22, starch: 4, sugar: 7, fat: 2, ash: 6.5, ca: 0.35, p: 0.95 },
+  { name: "Шрот рапсовый", price: 150, dm: 89, nel: 6.9, cp: 36, ndf: 29, adf: 20, starch: 6, sugar: 8, fat: 3.2, ash: 7, ca: 0.65, p: 1.10 },
+  { name: "Комбикорм", price: 120, dm: 88, nel: 7.5, cp: 18, ndf: 23, adf: 10, starch: 35, sugar: 6, fat: 3.5, ash: 6, ca: 0.8, p: 0.6 },
+  { name: "Соль", price: 90, dm: 100, nel: 0, cp: 0, ndf: 0, adf: 0, starch: 0, sugar: 0, fat: 0, ash: 100, ca: 0, p: 0 },
+  { name: "Сода", price: 130, dm: 100, nel: 0, cp: 0, ndf: 0, adf: 0, starch: 0, sugar: 0, fat: 0, ash: 100, ca: 0, p: 0 },
+  { name: "Мел", price: 55, dm: 100, nel: 0, cp: 0, ndf: 0, adf: 0, starch: 0, sugar: 0, fat: 0, ash: 100, ca: 38, p: 0 },
+  { name: "Трикальцийфосфат", price: 220, dm: 100, nel: 0, cp: 0, ndf: 0, adf: 0, starch: 0, sugar: 0, fat: 0, ash: 100, ca: 34, p: 18 },
+  { name: "Вода", price: 0, dm: 0, nel: 0, cp: 0, ndf: 0, adf: 0, starch: 0, sugar: 0, fat: 0, ash: 0, ca: 0, p: 0 }
+];
+const defaultGroups = {
+  high: {title:"Высокоудой", heads:120, targetMilk:32, bodyWeight:650, maintNEL:35, nelPerL:3.2, maintCP:.45, cpPerL:.085, ndfMin:28, ndfMax:34, starchMin:22, starchMax:28, ration:[["Силос кукурузный",22],["Сенаж люцерны",12],["Сено луговое",1.5],["Солома ячменная",1],["Ячмень дробленый",2.5],["Кукуруза дробленая",2],["Шрот подсолнечный",1.2],["Шрот рапсовый",1.8],["Комбикорм",6],["Соль",.1],["Сода",.2],["Мел",.1],["Трикальцийфосфат",.08],["Вода",4]]},
+  low: {title:"Низкоудой", heads:90, targetMilk:25, bodyWeight:620, maintNEL:33, nelPerL:3.2, maintCP:.40, cpPerL:.085, ndfMin:30, ndfMax:36, starchMin:18, starchMax:24, ration:[["Силос кукурузный",24],["Сенаж люцерны",10],["Сено луговое",2],["Солома ячменная",1.5],["Ячмень дробленый",1.5],["Кукуруза дробленая",1],["Шрот подсолнечный",1],["Шрот рапсовый",1.2],["Комбикорм",4],["Соль",.1],["Сода",.15],["Мел",.1],["Трикальцийфосфат",.08],["Вода",4]]},
+  dry: {title:"Сухостой", heads:35, targetMilk:0, bodyWeight:650, maintNEL:30, nelPerL:3.2, maintCP:.35, cpPerL:.085, ndfMin:36, ndfMax:44, starchMin:0, starchMax:16, ration:[["Силос кукурузный",12],["Сенаж люцерны",8],["Сено луговое",3],["Солома ячменная",3],["Ячмень дробленый",.5],["Шрот подсолнечный",.5],["Комбикорм",1],["Соль",.08],["Сода",.05],["Мел",.1],["Трикальцийфосфат",.05],["Вода",4]]}
+};
+const defaultProduction = [
+  {date:"2026-04-04", milk:5850, fat:4.2, protein:3.15, scc:290},
+  {date:"2026-04-05", milk:5920, fat:4.1, protein:3.16, scc:305},
+  {date:"2026-04-06", milk:6015, fat:4.15, protein:3.18, scc:298},
+  {date:"2026-04-07", milk:5960, fat:4.08, protein:3.14, scc:312},
+  {date:"2026-04-08", milk:6080, fat:4.22, protein:3.19, scc:287},
+  {date:"2026-04-09", milk:6125, fat:4.19, protein:3.20, scc:280},
+  {date:"2026-04-10", milk:6180, fat:4.25, protein:3.21, scc:275}
+];
+const defaultCosts = { care:45000, diesel:85000, electricity:52000, vet:38000, insemination:15000 };
+const defaultStaff = [
+  {name:"Скотник 1", role:"Скотник", salary:280000},
+  {name:"Скотник 2", role:"Скотник", salary:280000},
+  {name:"Доярка 1", role:"Доярка", salary:320000},
+  {name:"Доярка 2", role:"Доярка", salary:320000},
+  {name:"Ветврач", role:"Ветеринар", salary:450000},
+  {name:"Осеминатор", role:"Осеминатор", salary:350000}
+];
+
+let state = loadState();
+let pdfDraft = null;
+let charts = {};
+
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      return {
+        feeds: Array.isArray(p.feeds)?p.feeds:clone(defaultFeeds),
+        groups: p.groups || clone(defaultGroups),
+        settings: p.settings || { farmName:"КХ Прекрасное", technologist:"Букетаев Виталий Витальевич", milkPrice:245 },
+        production: Array.isArray(p.production)?p.production:clone(defaultProduction),
+        costs: p.costs || clone(defaultCosts),
+        staff: Array.isArray(p.staff)?p.staff:clone(defaultStaff)
+      };
+    }
+  }catch(e){}
+  return { feeds:clone(defaultFeeds), groups:clone(defaultGroups), settings:{ farmName:"КХ Прекрасное", technologist:"Букетаев Виталий Витальевич", milkPrice:245 }, production:clone(defaultProduction), costs:clone(defaultCosts), staff:clone(defaultStaff) };
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function n(v){ if(typeof v==="number") return v; const s=String(v??"").replace(/,/g,'.').replace(/[^0-9.\-]/g,''); const x=parseFloat(s); return Number.isFinite(x)?x:0; }
+function r(v,d=2){ return Number.isFinite(v)?(+v.toFixed(d)):0; }
+function esc(s){ return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;'); }
+
+function computeGroup(groupKey){
+  const g = state.groups[groupKey];
+  const feedMap = Object.fromEntries(state.feeds.map(f=>[f.name,f]));
+  const rows = g.ration.map(([feedName,asFedKg])=>{
+    const feed = feedMap[feedName];
+    if(!feed) return {feedName,asFedKg,missing:true,dmKg:0,nelTotal:0,cpKg:0,ndfKg:0,starchKg:0,cost:0};
+    const dmKg = asFedKg * feed.dm / 100;
+    const nelTotal = dmKg * feed.nel;
+    const cpKg = dmKg * feed.cp / 100;
+    const ndfKg = dmKg * feed.ndf / 100;
+    const starchKg = dmKg * feed.starch / 100;
+    const cost = asFedKg * feed.price;
+    return {...feed, feedName, asFedKg, dmKg, nelTotal, cpKg, ndfKg, starchKg, cost};
+  });
+  const totals = rows.reduce((a,x)=>({asFed:a.asFed+(x.asFedKg||0), dmKg:a.dmKg+(x.dmKg||0), nel:a.nel+(x.nelTotal||0), cpKg:a.cpKg+(x.cpKg||0), ndfKg:a.ndfKg+(x.ndfKg||0), starchKg:a.starchKg+(x.starchKg||0), cost:a.cost+(x.cost||0)}), {asFed:0,dmKg:0,nel:0,cpKg:0,ndfKg:0,starchKg:0,cost:0});
+  const ndfPct = totals.dmKg ? totals.ndfKg/totals.dmKg*100 : 0;
+  const starchPct = totals.dmKg ? totals.starchKg/totals.dmKg*100 : 0;
+  const milkByEnergy = Math.max((totals.nel - g.maintNEL)/g.nelPerL,0);
+  const milkByProtein = Math.max((totals.cpKg - g.maintCP)/g.cpPerL,0);
+  const expectedMilk = Math.min(milkByEnergy, milkByProtein);
+  const costPerL = expectedMilk > 0 ? totals.cost/expectedMilk : 0;
+  const milkPerGroup = expectedMilk * g.heads;
+  const revenuePerDay = milkPerGroup * state.settings.milkPrice;
+  const costPerGroup = totals.cost * g.heads;
+  const marginPerDay = revenuePerDay - costPerGroup;
+  const norms = {dmKg:0.025*g.bodyWeight+0.1*g.targetMilk, nel:g.maintNEL+g.targetMilk*g.nelPerL, cpKg:g.maintCP+g.targetMilk*g.cpPerL, ndfPct:(g.ndfMin+g.ndfMax)/2, starchPct:(g.starchMin+g.starchMax)/2};
+  const tips=[];
+  if(totals.nel < norms.nel) tips.push("Не хватает энергии: добавь кукурузу, ячмень или комбикорм.");
+  if(totals.cpKg < norms.cpKg) tips.push("Не хватает протеина: добавь рапсовый или подсолнечный шрот.");
+  if(ndfPct < g.ndfMin) tips.push("Мало структуры: добавь сенаж, сено или солому.");
+  if(starchPct > g.starchMax) tips.push("Избыток крахмала: риск ацидоза, снизь зерно или комбикорм.");
+  if(!tips.length) tips.push("Рацион выглядит ровно. Проверь по поедаемости, навозу и молоку по факту.");
+  return {rows, totals, ndfPct, starchPct, milkByEnergy, milkByProtein, expectedMilk, costPerL, norms, tips, milkPerGroup, revenuePerDay, costPerGroup, marginPerDay};
+}
+
+function totalMilkToday(){ return state.production.length ? state.production[state.production.length-1].milk : 0; }
+function avgFat(){ return state.production.length ? state.production.reduce((a,x)=>a+x.fat,0)/state.production.length : 0; }
+function avgProtein(){ return state.production.length ? state.production.reduce((a,x)=>a+x.protein,0)/state.production.length : 0; }
+function avgScc(){ return state.production.length ? state.production.reduce((a,x)=>a+x.scc,0)/state.production.length : 0; }
+function feedCostTotal(){ const h=computeGroup('high'), l=computeGroup('low'), d=computeGroup('dry'); return h.costPerGroup + l.costPerGroup + d.costPerGroup; }
+function staffCostMonthly(){ return state.staff.reduce((a,x)=>a+n(x.salary),0); }
+function staffCostDaily(){ return staffCostMonthly()/30; }
+function extraCostDaily(){ return n(state.costs.care)+n(state.costs.diesel)+n(state.costs.electricity)+n(state.costs.vet)+n(state.costs.insemination); }
+function fullCostDaily(){ return feedCostTotal()+extraCostDaily()+staffCostDaily(); }
+function revenueDaily(){ return totalMilkToday()*n(state.settings.milkPrice); }
+function fullMarginDaily(){ return revenueDaily()-fullCostDaily(); }
+
+function extractFeedName(text){
+  const names = ["силос кукурузный","сенаж люцерны","сено луговое","солома ячменная","ячмень дробленый","кукуруза дробленая","шрот подсолнечный","шрот рапсовый","комбикорм"];
+  const lower = text.toLowerCase(); const found = names.find(x=>lower.includes(x));
+  return found ? found.charAt(0).toUpperCase()+found.slice(1) : "Новый корм из PDF";
+}
+function extractAnalysisFromText(text){
+  const cleaned = String(text||"").replace(/\u00A0/g,' ').replace(/[%]/g,' % ').replace(/\s+/g,' ').trim();
+  const rules = [
+    { key:"dm", patterns:[/сух[оея]+\s+веществ[оа]?\s*[:\-]?\s*(\d+[.,]?\d*)/i, /\bсв\b\s*[:\-]?\s*(\d+[.,]?\d*)/i, /dry\s*matter\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"cp", patterns:[/сыр[оы]й\s+протеин\s*[:\-]?\s*(\d+[.,]?\d*)/i, /\bсп\b\s*[:\-]?\s*(\d+[.,]?\d*)/i, /crude\s+protein\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"ndf", patterns:[/\bndf\b\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"adf", patterns:[/\badf\b\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"starch", patterns:[/крахмал\s*[:\-]?\s*(\d+[.,]?\d*)/i, /starch\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"sugar", patterns:[/сахар\w*\s*[:\-]?\s*(\d+[.,]?\d*)/i, /sugar\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"fat", patterns:[/жир\s*[:\-]?\s*(\d+[.,]?\d*)/i, /fat\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"ash", patterns:[/зол[аы]\s*[:\-]?\s*(\d+[.,]?\d*)/i, /ash\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"ca", patterns:[/\bca\b\s*[:\-]?\s*(\d+[.,]?\d*)/i, /кальци[йя]\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"p", patterns:[/\bp\b\s*[:\-]?\s*(\d+[.,]?\d*)/i, /фосфор\s*[:\-]?\s*(\d+[.,]?\d*)/i] },
+    { key:"nel", patterns:[/\bnel\b\s*[:\-]?\s*(\d+[.,]?\d*)/i, /энерг.*?лактац.*?\s*[:\-]?\s*(\d+[.,]?\d*)/i, /обменн.*?энерг.*?\s*[:\-]?\s*(\d+[.,]?\d*)/i] }
+  ];
+  const result = { name: extractFeedName(cleaned), price:0, dm:0, nel:0, cp:0, ndf:0, adf:0, starch:0, sugar:0, fat:0, ash:0, ca:0, p:0, sourceText: cleaned };
+  for(const rule of rules){ for(const pattern of rule.patterns){ const m = cleaned.match(pattern); if(m?.[1]){ result[rule.key]=n(m[1]); break; } } }
+  return result;
+}
+
+function showApp(){ document.getElementById('loginScreen').classList.add('hide'); document.getElementById('appScreen').classList.remove('hide'); rerenderAll(); }
+function showLogin(){ document.getElementById('appScreen').classList.add('hide'); document.getElementById('loginScreen').classList.remove('hide'); }
+function doLogin(){
+  const user = document.getElementById('loginUser').value.trim(), pass = document.getElementById('loginPass').value.trim();
+  if(user!=='admin' || pass!=='1234'){ alert('Неверный логин или пароль'); return; }
+  state.settings.farmName = document.getElementById('farmNameInput').value.trim() || 'КХ Прекрасное';
+  state.settings.technologist = document.getElementById('technologistInput').value.trim() || 'Букетаев Виталий Витальевич';
+  saveState(); sessionStorage.setItem(SESSION_KEY,'1'); showApp();
+}
+document.getElementById('enterBtn').onclick = doLogin;
+document.getElementById('logoutBtn').onclick = ()=>{ sessionStorage.removeItem(SESSION_KEY); showLogin(); };
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active', s.id===tab));
+  if(['analytics','production','economy'].includes(tab)) setTimeout(renderCharts,50);
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+
+function metricCard(label, value, sub){ return `<div class="stat-card"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`; }
+
+function renderDashboard(){
+  document.getElementById('heroMilkDay').textContent = r(totalMilkToday(),0);
+  document.getElementById('heroFullCostDay').textContent = r(fullCostDaily(),0);
+  document.getElementById('heroMarginDay').textContent = r(fullMarginDaily(),0);
+  document.getElementById('heroStaffCount').textContent = state.staff.length;
+  document.getElementById('farmNameTop').textContent = state.settings.farmName;
+  document.getElementById('techChip').textContent = 'Главный технолог: ' + state.settings.technologist;
+  const high = computeGroup('high'), low = computeGroup('low'), dry = computeGroup('dry');
+  document.getElementById('dashboard').innerHTML = `
+    <div class="grid4">
+      ${metricCard('Средний жир', `${r(avgFat(),2)} %`, 'За последние дни')}
+      ${metricCard('Средний белок', `${r(avgProtein(),2)} %`, 'За последние дни')}
+      ${metricCard('Средняя соматика', `${r(avgScc(),0)}`, 'тыс./мл')}
+      ${metricCard('Сотрудников', `${state.staff.length}`, 'в списке')}
+    </div>
+    <div class="grid4" style="margin-top:18px">
+      ${metricCard('Корма/сутки', `${r(feedCostTotal(),0)} тг`, 'все группы')}
+      ${metricCard('Прочие затраты/сутки', `${r(extraCostDaily(),0)} тг`, 'без зарплаты')}
+      ${metricCard('Зарплата/сутки', `${r(staffCostDaily(),0)} тг`, 'по сотрудникам')}
+      ${metricCard('Полная маржа/сутки', `${r(fullMarginDaily(),0)} тг`, 'выручка - все затраты')}
+    </div>
+    <div class="grid3" style="margin-top:18px">
+      ${summaryCard('Высокоудой', high)}
+      ${summaryCard('Низкоудой', low)}
+      ${summaryCard('Сухостой', dry)}
+    </div>
+  `;
+}
+function summaryCard(title, calc){
+  return `<div class="card"><div class="panel"><h3 class="title">${title}</h3><div class="desc">Быстрая оценка группы</div>
+    <div class="mini-grid" style="margin-top:14px">
+      <div class="mini"><div class="k">Ожид. надой</div><div class="v">${r(calc.expectedMilk,1)} л</div></div>
+      <div class="mini"><div class="k">Тг/л</div><div class="v">${r(calc.costPerL,1)}</div></div>
+      <div class="mini"><div class="k">Выручка/сут</div><div class="v">${r(calc.revenuePerDay,0)}</div></div>
+      <div class="mini"><div class="k">Маржа/сут</div><div class="v">${r(calc.marginPerDay,0)}</div></div>
+    </div>
+    <div style="margin-top:14px">${calc.tips.slice(0,3).map(t=>`<div class="tip">${t}</div>`).join('')}</div>
+  </div></div>`;
+}
+
+function renderAnalytics(){
+  document.getElementById('analytics').innerHTML = `
+    <div class="grid2">
+      <div class="card"><div class="panel"><h3 class="title">Аналитика по надою и стоимости</h3><div class="desc">Сравнение групп по ожидаемому молоку и себестоимости.</div><div class="chartbox" style="margin-top:16px"><canvas id="milkChart"></canvas></div></div></div>
+      <div class="card"><div class="panel"><h3 class="title">Структура рациона</h3><div class="desc">NDF и крахмал по каждой группе.</div><div class="chartbox" style="margin-top:16px"><canvas id="structureChart"></canvas></div></div></div>
+    </div>
+  `;
+}
+
+function renderProduction(){
+  const rows = state.production.map((x,i)=>`<tr><td><input value="${esc(x.date)}" data-prod="${i}" data-pk="date"></td><td><input value="${x.milk}" data-prod="${i}" data-pk="milk"></td><td><input value="${x.fat}" data-prod="${i}" data-pk="fat"></td><td><input value="${x.protein}" data-prod="${i}" data-pk="protein"></td><td><input value="${x.scc}" data-prod="${i}" data-pk="scc"></td><td><button class="btn secondary" style="padding:8px 10px" onclick="removeProductionRow(${i})">Удалить</button></td></tr>`).join('');
+  document.getElementById('production').innerHTML = `
+    <div class="grid2">
+      <div class="card"><div class="panel"><h3 class="title">Производство молока по дням</h3><div class="desc">Вводи молоко, жир, белок и соматические клетки по дням.</div>
+        <div class="tablewrap" style="margin-top:16px"><table><thead><tr><th>Дата</th><th>Молоко, л</th><th>Жир, %</th><th>Белок, %</th><th>Соматика, тыс./мл</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <button style="margin-top:14px" onclick="addProductionRow()">Добавить день</button>
+      </div></div>
+      <div><div class="card"><div class="panel"><h3 class="title">График производства</h3><div class="chartbox" style="margin-top:16px"><canvas id="prodChart"></canvas></div></div></div></div>
+    </div>
+  `;
+  document.querySelectorAll('[data-prod]').forEach(el=>el.addEventListener('change', e=>{
+    const i = +e.target.dataset.prod, key = e.target.dataset.pk;
+    state.production[i][key] = key==='date' ? e.target.value : n(e.target.value);
+    saveState(); rerenderAll();
+  }));
+}
+
+function renderEconomy(){
+  const costPerL = totalMilkToday() > 0 ? fullCostDaily()/totalMilkToday() : 0;
+  document.getElementById('economy').innerHTML = `
+    <div class="card"><div class="panel">
+      <h3 class="title">Экономика фермы</h3>
+      <div class="desc">Полная экономика: молоко, корма, прочие затраты и зарплата.</div>
+      <div class="econ-grid" style="margin-top:18px">
+        <div class="econ"><div class="k">Выручка/сутки</div><div class="v">${r(revenueDaily(),0)}</div><div class="desc">тенге</div></div>
+        <div class="econ"><div class="k">Корма/сутки</div><div class="v">${r(feedCostTotal(),0)}</div><div class="desc">тенге</div></div>
+        <div class="econ"><div class="k">Прочие/сутки</div><div class="v">${r(extraCostDaily(),0)}</div><div class="desc">тенге</div></div>
+        <div class="econ"><div class="k">Зарплата/сутки</div><div class="v">${r(staffCostDaily(),0)}</div><div class="desc">тенге</div></div>
+      </div>
+      <div class="grid2" style="margin-top:18px">
+        <div class="card"><div class="panel"><h3 class="title">Структура затрат</h3><div class="chartbox" style="margin-top:16px"><canvas id="costChart"></canvas></div></div></div>
+        <div class="card"><div class="panel"><h3 class="title">Итог</h3>
+          <div class="director-box"><div class="muted">Полные затраты/сутки</div><div class="big">${r(fullCostDaily(),0)} тг</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">Полная маржа/сутки</div><div class="big">${r(fullMarginDaily(),0)} тг</div></div>
+          <div class="tip" style="margin-top:14px">Себестоимость 1 литра с учетом всех затрат: <strong>${r(costPerL,1)} тг/л</strong>.</div>
+        </div></div>
+      </div>
+    </div></div>
+  `;
+}
+
+function renderCosts(){
+  document.getElementById('costs').innerHTML = `
+    <div class="grid2">
+      <div class="card"><div class="panel"><h3 class="title">Прочие затраты в сутки</h3><div class="desc">Добавь все ежедневные расходы фермы, кроме кормов и зарплаты.</div>
+        <div class="fields" style="margin-top:14px">
+          <div class="field"><label>Уход / расходники, тг/сут</label><input id="cost_care" value="${state.costs.care}"></div>
+          <div class="field"><label>Дизтопливо, тг/сут</label><input id="cost_diesel" value="${state.costs.diesel}"></div>
+          <div class="field"><label>Электроэнергия, тг/сут</label><input id="cost_electricity" value="${state.costs.electricity}"></div>
+          <div class="field"><label>Ветпрепараты, тг/сут</label><input id="cost_vet" value="${state.costs.vet}"></div>
+          <div class="field"><label>Осеменение, тг/сут</label><input id="cost_insemination" value="${state.costs.insemination}"></div>
+          <div class="field"><label>Цена молока, тг/л</label><input id="milkPriceInput2" value="${state.settings.milkPrice}"></div>
+        </div>
+        <button style="margin-top:14px" onclick="saveCosts()">Сохранить затраты</button>
+      </div></div>
+      <div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Итог по затратам</h3>
+          <div class="director-box"><div class="muted">Прочие затраты/сутки</div><div class="big">${r(extraCostDaily(),0)} тг</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">Корма/сутки</div><div class="big">${r(feedCostTotal(),0)} тг</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">Зарплата/сутки</div><div class="big">${r(staffCostDaily(),0)} тг</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">Все затраты/сутки</div><div class="big">${r(fullCostDaily(),0)} тг</div></div>
+        </div></div>
+        <div class="card"><div class="panel"><h3 class="title">Подсказка</h3><div class="tip ok">Эти расходы лучше вводить как усредненные суточные значения. Для месяца можно взять сумму месяца и разделить на 30.</div></div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStaff(){
+  const rows = state.staff.map((x,i)=>`<tr><td><input value="${esc(x.name)}" data-staff="${i}" data-sk="name"></td><td><input value="${esc(x.role)}" data-staff="${i}" data-sk="role"></td><td><input value="${x.salary}" data-staff="${i}" data-sk="salary"></td><td><button class="btn secondary" style="padding:8px 10px" onclick="removeStaff(${i})">Удалить</button></td></tr>`).join('');
+  document.getElementById('staff').innerHTML = `
+    <div class="grid2">
+      <div class="card"><div class="panel"><h3 class="title">Сотрудники и зарплата</h3><div class="desc">Добавляй сотрудников и считай зарплатную нагрузку.</div>
+        <div class="tablewrap" style="margin-top:16px"><table><thead><tr><th>Сотрудник</th><th>Должность</th><th>Зарплата, тг/мес</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <button style="margin-top:14px" onclick="addStaff()">Добавить сотрудника</button>
+      </div></div>
+      <div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Итог по зарплате</h3>
+          <div class="director-box"><div class="muted">Сотрудников</div><div class="big">${state.staff.length}</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">ФОТ в месяц</div><div class="big">${r(staffCostMonthly(),0)} тг</div></div>
+          <div class="director-box" style="margin-top:12px"><div class="muted">ФОТ в сутки</div><div class="big">${r(staffCostDaily(),0)} тг</div></div>
+        </div></div>
+        <div class="card"><div class="panel"><h3 class="title">Примеры должностей</h3><div class="tip">Скотник, ночной скотник, доярка, ветврач, осеменатор, пастух, слесарь, разнорабочий.</div></div></div>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('[data-staff]').forEach(el=>el.addEventListener('change', e=>{
+    const i = +e.target.dataset.staff, key = e.target.dataset.sk;
+    state.staff[i][key] = key==='salary' ? n(e.target.value) : e.target.value;
+    saveState(); rerenderAll();
+  }));
+}
+
+function renderDirector(){
+  const costPerL = totalMilkToday() > 0 ? fullCostDaily()/totalMilkToday() : 0;
+  const yesterdayMilk = state.production.length>1 ? state.production[state.production.length-2].milk : totalMilkToday();
+  const diffMilk = totalMilkToday() - yesterdayMilk;
+  document.getElementById('director').innerHTML = `
+    <div class="card"><div class="panel">
+      <h3 class="title">Краткий отчет директору</h3>
+      <div class="desc">Короткая управленческая сводка по состоянию фермы на сегодня.</div>
+      <div class="grid4" style="margin-top:18px">
+        <div class="director-box"><div class="muted">Молоко сегодня</div><div class="big">${r(totalMilkToday(),0)} л</div><div class="${diffMilk>=0?'pos':'neg'}">${diffMilk>=0?'+':''}${r(diffMilk,0)} л к прошлому дню</div></div>
+        <div class="director-box"><div class="muted">Полные затраты</div><div class="big">${r(fullCostDaily(),0)}</div><div class="muted">тг/сутки</div></div>
+        <div class="director-box"><div class="muted">Маржа сегодня</div><div class="big">${r(fullMarginDaily(),0)}</div><div class="muted">тг/сутки</div></div>
+        <div class="director-box"><div class="muted">Себестоимость 1 л</div><div class="big">${r(costPerL,1)}</div><div class="muted">тг/л</div></div>
+      </div>
+      <div class="grid2" style="margin-top:18px">
+        <div class="director-box">
+          <div class="muted">Качество молока</div>
+          <div style="margin-top:12px;line-height:1.8">Средний жир: <strong>${r(avgFat(),2)}%</strong><br>Средний белок: <strong>${r(avgProtein(),2)}%</strong><br>Средняя соматика: <strong>${r(avgScc(),0)} тыс./мл</strong></div>
+        </div>
+        <div class="director-box">
+          <div class="muted">Структура затрат</div>
+          <div style="margin-top:12px;line-height:1.8">Корма: <strong>${r(feedCostTotal(),0)} тг/сут</strong><br>Прочие расходы: <strong>${r(extraCostDaily(),0)} тг/сут</strong><br>Зарплата: <strong>${r(staffCostDaily(),0)} тг/сут</strong><br>Сотрудников: <strong>${state.staff.length}</strong></div>
+        </div>
+      </div>
+      <div class="tip" style="margin-top:18px">Этот экран можно печатать и отдавать директору или бухгалтеру как ежедневную сводку.</div>
+    </div></div>
+  `;
+}
+
+function renderFeeds(){
+  const rows = state.feeds.map((f,i)=>`<tr><td><input value="${esc(f.name)}" data-feed="${i}" data-key="name"></td>${Object.keys(nutrientLabels).map(k=>`<td><input value="${f[k] ?? 0}" data-feed="${i}" data-key="${k}"></td>`).join('')}<td><button class="btn secondary" style="padding:8px 10px" onclick="deleteFeed(${i})">Удалить</button></td></tr>`).join('');
+  document.getElementById('feeds').innerHTML = `
+    <div class="grid2">
+      <div class="card"><div class="panel"><h3 class="title">Библиотека кормов</h3><div class="desc">Полный анализ, цены и редактирование кормов под твою ферму.</div><div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Корм</th>${Object.values(nutrientLabels).map(v=>`<th>${v}</th>`).join('')}<th></th></tr></thead><tbody>${rows}</tbody></table></div></div></div>
+      <div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Добавить корм</h3><div class="fields" style="margin-top:14px"><div class="field" style="grid-column:1/-1"><label>Название</label><input id="new_name"></div>${Object.entries(nutrientLabels).map(([k,v])=>`<div class="field"><label>${v}</label><input id="new_${k}" value="0"></div>`).join('')}</div><button style="margin-top:14px" onclick="addFeed()">Добавить в библиотеку</button></div></div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Импорт анализа из PDF</h3><div class="desc">Загрузить лабораторный PDF. Приложение попытается вытащить показатели автоматически.</div><div class="field" style="margin-top:14px"><input type="file" id="pdfInput" accept="application/pdf"></div><div class="field"><label>Извлеченный текст</label><textarea id="pdfPreview" readonly></textarea></div></div></div>
+        <div class="card"><div class="panel"><h3 class="title">Общие настройки</h3><div class="fields" style="margin-top:14px"><div class="field"><label>Цена молока, тг/л</label><input id="milkPriceInput" value="${state.settings.milkPrice}"></div><div class="field"><label>Название фермы</label><input id="farmNameSetting" value="${esc(state.settings.farmName)}"></div><div class="field" style="grid-column:1/-1"><label>Главный технолог</label><input id="technologistSetting" value="${esc(state.settings.technologist)}"></div></div><button style="margin-top:14px" onclick="saveGeneralSettings()">Сохранить настройки</button></div></div>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('[data-feed]').forEach(el=>el.addEventListener('change', e=>{ const i=+e.target.dataset.feed, key=e.target.dataset.key; state.feeds[i][key]= key==='name' ? e.target.value : n(e.target.value); saveState(); rerenderAll(); }));
+  document.getElementById('pdfInput').addEventListener('change', handlePdfUpload);
+}
+
+async function handlePdfUpload(e){
+  const file = e.target.files?.[0]; if(!file) return;
+  const preview = document.getElementById('pdfPreview'); preview.value = 'Читаю PDF...';
+  try{
+    const pdfjsLib = globalThis.pdfjsLib;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+    const arr = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: arr}).promise;
+    let text=''; for(let p=1; p<=pdf.numPages; p++){ const page = await pdf.getPage(p); const content = await page.getTextContent(); text += '\\n' + content.items.map(i=>i.str || '').join(' '); }
+    preview.value = text.trim().slice(0,5000) || 'Текста мало или PDF сканированный.';
+    pdfDraft = extractAnalysisFromText(text);
+    openPdfModal();
+  }catch(err){ preview.value = 'Не удалось прочитать PDF: ' + (err?.message || 'ошибка'); }
+}
+function openPdfModal(){
+  if(!pdfDraft) return;
+  document.getElementById('pdfFields').innerHTML = `<div class="field" style="grid-column:1/-1"><label>Название корма</label><input id="pdf_name" value="${esc(pdfDraft.name)}"></div>${Object.entries(nutrientLabels).map(([k,v])=>`<div class="field"><label>${v}</label><input id="pdf_${k}" value="${pdfDraft[k] ?? 0}"></div>`).join('')}`;
+  document.getElementById('pdfSourceText').value = pdfDraft.sourceText || '';
+  document.getElementById('pdfModalBg').classList.add('show');
+}
+function closePdfModal(){ document.getElementById('pdfModalBg').classList.remove('show'); }
+document.getElementById('closeModal').onclick = closePdfModal;
+document.getElementById('cancelPdfSave').onclick = closePdfModal;
+document.getElementById('savePdfFeed').onclick = ()=>{
+  if(!pdfDraft) return;
+  const obj = { name: document.getElementById('pdf_name').value || 'Новый корм из PDF' };
+  for(const k of Object.keys(nutrientLabels)) obj[k] = n(document.getElementById('pdf_'+k).value);
+  state.feeds.push(obj); saveState(); closePdfModal(); rerenderAll(); switchTab('feeds');
+};
+
+function renderGroup(groupKey){
+  const g = state.groups[groupKey], calc = computeGroup(groupKey);
+  const options = state.feeds.map(f=>`<option>${esc(f.name)}</option>`).join('');
+  const rows = calc.rows.map((row,i)=>`<tr><td><select data-group="${groupKey}" data-row="${i}" data-gkey="feedName">${options.replace(`>${esc(row.feedName)}<`,` selected>${esc(row.feedName)}<`)}</select></td><td><input value="${row.asFedKg}" data-group="${groupKey}" data-row="${i}" data-gkey="asFedKg"></td><td>${r(row.dmKg,2)}</td><td>${r(row.nelTotal,2)}</td><td>${r(row.cpKg,3)}</td><td>${r(row.ndfKg,3)}</td><td>${r(row.starchKg,3)}</td><td>${r(row.cost,0)} тг</td><td><button class="btn secondary" style="padding:8px 10px" onclick="removeRationRow('${groupKey}',${i})">Удалить</button></td></tr>`).join('');
+  const norms = [["СВ, кг", calc.norms.dmKg, calc.totals.dmKg],["NEL, МДж", calc.norms.nel, calc.totals.nel],["СП, кг", calc.norms.cpKg, calc.totals.cpKg],["NDF, % СВ", calc.norms.ndfPct, calc.ndfPct],["Крахмал, % СВ", calc.norms.starchPct, calc.starchPct]];
+  document.getElementById(groupKey).innerHTML = `
+    <div class="metrics">
+      ${metricCard('Ожидаемый надой', `${r(calc.expectedMilk,1)} л`, `по энергии ${r(calc.milkByEnergy,1)} | по протеину ${r(calc.milkByProtein,1)}`)}
+      ${metricCard('Себестоимость', `${r(calc.totals.cost,0)} тг`, `${r(calc.costPerL,1)} тг/л`)}
+      ${metricCard('Молоко группы', `${r(calc.milkPerGroup,0)} л`, `${g.heads} голов`)}
+      ${metricCard('Маржа/сутки', `${r(calc.marginPerDay,0)} тг`, `выручка ${r(calc.revenuePerDay,0)} тг`)}
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="card"><div class="panel"><h3 class="title">${g.title} — рацион</h3><div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Корм</th><th>Кг натурой</th><th>СВ, кг</th><th>NEL</th><th>СП, кг</th><th>NDF, кг</th><th>Крахмал, кг</th><th>Стоимость</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><button style="margin-top:14px" onclick="addRationRow('${groupKey}')">Добавить строку</button></div></div>
+      <div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Настройки группы</h3><div class="fields" style="margin-top:14px">${[['heads','Голов в группе'],['targetMilk','Целевой надой, л'],['bodyWeight','Живая масса, кг'],['maintNEL','Поддержание NEL, МДж'],['nelPerL','NEL на 1 л'],['maintCP','СП поддержание, кг'],['cpPerL','СП на 1 л, кг'],['ndfMin','NDF мин, %'],['ndfMax','NDF макс, %'],['starchMin','Крахмал мин, %'],['starchMax','Крахмал макс, %']].map(([k,l])=>`<div class="field"><label>${l}</label><input value="${g[k]}" data-setting-group="${groupKey}" data-setting-key="${k}"></div>`).join('')}</div></div></div>
+        <div class="card" style="margin-bottom:18px"><div class="panel"><h3 class="title">Нормы / факт</h3>${norms.map(([label,norm,fact])=>{ const diff=fact-norm; return `<div class="normrow"><div><strong>${label}</strong></div><div>Норма: ${r(norm,2)}</div><div>Факт: ${r(fact,2)}</div><div class="${diff>=0?'pos':'neg'}">${diff>=0?'+':''}${r(diff,2)}</div></div>`; }).join('')}</div></div>
+        <div class="card"><div class="panel"><h3 class="title">Автоподсказки</h3>${calc.tips.map(t=>`<div class="tip">${t}</div>`).join('')}</div></div>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('[data-group]').forEach(el=>el.addEventListener('change', e=>{
+    const gk=e.target.dataset.group, idx=+e.target.dataset.row, key=e.target.dataset.gkey;
+    if(key==='feedName') state.groups[gk].ration[idx][0]=e.target.value; else state.groups[gk].ration[idx][1]=n(e.target.value);
+    saveState(); rerenderAll();
+  }));
+  document.querySelectorAll('[data-setting-group]').forEach(el=>el.addEventListener('change', e=>{
+    state.groups[e.target.dataset.settingGroup][e.target.dataset.settingKey]=n(e.target.value); saveState(); rerenderAll();
+  }));
+}
+
+function renderCharts(){
+  destroyCharts();
+  const h=computeGroup('high'), l=computeGroup('low'), d=computeGroup('dry');
+  if(document.getElementById('milkChart')){
+    charts.milk = new Chart(document.getElementById('milkChart'), {type:'bar',data:{labels:['Высокоудой','Низкоудой','Сухостой'],datasets:[{label:'Ожидаемый надой, л/гол',data:[h.expectedMilk,l.expectedMilk,d.expectedMilk],backgroundColor:['rgba(16,185,129,.78)','rgba(2,132,199,.78)','rgba(245,158,11,.78)']},{label:'Себестоимость, тг/л',data:[h.costPerL,l.costPerL,d.costPerL],backgroundColor:['rgba(6,95,70,.55)','rgba(14,116,144,.55)','rgba(180,83,9,.55)']}]},options:{responsive:true,maintainAspectRatio:false}});
+  }
+  if(document.getElementById('structureChart')){
+    charts.structure = new Chart(document.getElementById('structureChart'), {type:'radar',data:{labels:['Высокоудой','Низкоудой','Сухостой'],datasets:[{label:'NDF % СВ',data:[h.ndfPct,l.ndfPct,d.ndfPct],borderColor:'rgba(2,132,199,.9)',backgroundColor:'rgba(2,132,199,.18)'},{label:'Крахмал % СВ',data:[h.starchPct,l.starchPct,d.starchPct],borderColor:'rgba(16,185,129,.9)',backgroundColor:'rgba(16,185,129,.18)'}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{beginAtZero:true}}}});
+  }
+  if(document.getElementById('prodChart')){
+    charts.prod = new Chart(document.getElementById('prodChart'), {type:'line',data:{labels:state.production.map(x=>x.date),datasets:[{label:'Молоко, л',data:state.production.map(x=>x.milk),borderColor:'rgba(16,185,129,.95)',backgroundColor:'rgba(16,185,129,.14)',tension:.3,fill:true},{label:'Жир, %',data:state.production.map(x=>x.fat),borderColor:'rgba(2,132,199,.95)',tension:.3},{label:'Белок, %',data:state.production.map(x=>x.protein),borderColor:'rgba(124,58,237,.95)',tension:.3}]},options:{responsive:true,maintainAspectRatio:false}});
+  }
+  if(document.getElementById('costChart')){
+    charts.cost = new Chart(document.getElementById('costChart'), {type:'doughnut',data:{labels:['Корма','Уход','Дизтопливо','Электроэнергия','Ветпрепараты','Осеменение','Зарплата'],datasets:[{data:[feedCostTotal(), n(state.costs.care), n(state.costs.diesel), n(state.costs.electricity), n(state.costs.vet), n(state.costs.insemination), staffCostDaily()],backgroundColor:['#10b981','#f59e0b','#0284c7','#7c3aed','#ef4444','#14b8a6','#334155']}]},options:{responsive:true,maintainAspectRatio:false}});
+  }
+}
+function destroyCharts(){ Object.values(charts).forEach(c=>{ try{ c.destroy(); }catch(e){} }); charts={}; }
+
+function addFeed(){ const obj = {name:document.getElementById('new_name').value.trim() || 'Новый корм'}; for(const k of Object.keys(nutrientLabels)) obj[k]=n(document.getElementById('new_'+k).value); state.feeds.push(obj); saveState(); rerenderAll(); }
+function deleteFeed(i){ state.feeds.splice(i,1); saveState(); rerenderAll(); }
+function addRationRow(groupKey){ state.groups[groupKey].ration.push([state.feeds[0]?.name || '', 0]); saveState(); rerenderAll(); }
+function removeRationRow(groupKey, idx){ state.groups[groupKey].ration.splice(idx,1); saveState(); rerenderAll(); }
+function addProductionRow(){ const today = new Date().toISOString().slice(0,10); state.production.push({date:today,milk:0,fat:4.0,protein:3.2,scc:300}); saveState(); rerenderAll(); }
+function removeProductionRow(i){ state.production.splice(i,1); saveState(); rerenderAll(); }
+function saveGeneralSettings(){
+  state.settings.milkPrice = n(document.getElementById('milkPriceInput').value);
+  state.settings.farmName = document.getElementById('farmNameSetting').value.trim() || 'КХ Прекрасное';
+  state.settings.technologist = document.getElementById('technologistSetting').value.trim() || 'Букетаев Виталий Витальевич';
+  document.getElementById('farmNameInput').value = state.settings.farmName;
+  document.getElementById('technologistInput').value = state.settings.technologist;
+  saveState(); rerenderAll();
+}
+function saveCosts(){
+  state.costs.care = n(document.getElementById('cost_care').value);
+  state.costs.diesel = n(document.getElementById('cost_diesel').value);
+  state.costs.electricity = n(document.getElementById('cost_electricity').value);
+  state.costs.vet = n(document.getElementById('cost_vet').value);
+  state.costs.insemination = n(document.getElementById('cost_insemination').value);
+  state.settings.milkPrice = n(document.getElementById('milkPriceInput2').value);
+  saveState(); rerenderAll();
+}
+function addStaff(){ state.staff.push({name:'Новый сотрудник', role:'Должность', salary:250000}); saveState(); rerenderAll(); }
+function removeStaff(i){ state.staff.splice(i,1); saveState(); rerenderAll(); }
+
+window.addFeed = addFeed; window.deleteFeed = deleteFeed; window.addRationRow = addRationRow; window.removeRationRow = removeRationRow;
+window.addProductionRow = addProductionRow; window.removeProductionRow = removeProductionRow; window.saveGeneralSettings = saveGeneralSettings;
+window.saveCosts = saveCosts; window.addStaff = addStaff; window.removeStaff = removeStaff;
+
+document.getElementById('exportBtn').onclick = ()=>{ const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='buketaev-korm-final-data.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
+document.getElementById('importJson').addEventListener('change', async e=>{ const file = e.target.files?.[0]; if(!file) return; const data = JSON.parse(await file.text()); if(Array.isArray(data.feeds)) state.feeds=data.feeds; if(data.groups) state.groups=data.groups; if(data.settings) state.settings=data.settings; if(Array.isArray(data.production)) state.production=data.production; if(data.costs) state.costs=data.costs; if(Array.isArray(data.staff)) state.staff=data.staff; saveState(); rerenderAll(); });
+document.getElementById('printBtn').onclick = ()=>window.print();
+
+function showAppRender(){
+  renderDashboard(); renderAnalytics(); renderProduction(); renderEconomy(); renderCosts(); renderStaff(); renderDirector(); renderFeeds(); renderGroup('high'); renderGroup('low'); renderGroup('dry');
+  saveState();
+}
+function rerenderAll(){ showAppRender(); if(['analytics','production','economy'].includes(document.querySelector('.tab.active')?.dataset.tab)) setTimeout(renderCharts,50); }
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('farmNameInput').value = state.settings.farmName;
+  document.getElementById('technologistInput').value = state.settings.technologist;
+  if(sessionStorage.getItem(SESSION_KEY)==='1') showApp(); else showLogin();
+});
+if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>
